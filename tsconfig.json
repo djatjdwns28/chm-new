@@ -1,4 +1,25 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
-  "extends": "./.nuxt/tsconfig.json"
+  "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "lib": ["ESNext", "ESNext.AsyncIterable", "DOM"],
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "allowJs": true, // JavaScript 파일도 컴파일에 포함
+    "checkJs": false, // JavaScript 파일의 타입 체크를 비활성화
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "sourceMap": true,
+    "noEmit": true,
+    "paths": {
+      "~/*": ["./*"],
+      "@/*": ["./*"]
+    },
+    "typeRoots": ["types"]
+  },
+  "exclude": ["node_modules"]
 }
