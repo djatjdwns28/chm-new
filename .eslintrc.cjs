@@ -87,10 +87,13 @@ module.exports = {
         message: '`with` is disallowed in strict mode because it makes code impossible to predict and optimize.'
       }
     ],
+
     'prefer-template': 'off',
     'prefer-destructuring': 'off',
     'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
     'vue/no-setup-props-destructure': 'off',
+    'no-use-before-define': 'off', // JavaScript 규칙 비활성화
+    '@typescript-eslint/no-use-before-define': ['error'], // 타입스크립트 규칙 활성화
     'max-len': [
       'warn',
       160,

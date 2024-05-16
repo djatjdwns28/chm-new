@@ -57,25 +57,25 @@
 import { computed, ref } from 'vue';
 import { useMenuStore } from '~/stores/menu';
 import { menuList } from '~/config/menu';
-
-const isOpen = ref(false);
-
-const openMenuCard = () => {
-  isOpen.value = !isOpen.value;
-};
+import type { Menu, MenuBase, NestedSubMenu, SubMenu } from '~/types/menu';
 
 const menuStore = useMenuStore();
 const router = useRouter();
 const route = useRoute();
 
-const subMenuList = ref([]);
-const nestedSubMenuList = ref([]);
+const isOpen = ref<boolean>(false);
+const subMenuList = ref<SubMenu[]>([]);
+const nestedSubMenuList = ref<NestedSubMenu[]>([]);
 
-const selectedMenu = computed(() => menuStore.selectedMenu);
-const selectedSubMenu = computed(() => menuStore.selectedSubMenu);
-const selectedNestedSubMenu = computed(() => menuStore.selectedNestedSubMenu);
+const selectedMenu = computed<string>(() => menuStore.selectedMenu);
+const selectedSubMenu = computed<string>(() => menuStore.selectedSubMenu);
+const selectedNestedSubMenu = computed<string>(() => menuStore.selectedNestedSubMenu);
 
-const getUpdatedState = (currentState, value) => {
+const openMenuCard = (): void => {
+  isOpen.value = !isOpen.value;
+};
+
+const getUpdatedState = (currentState: any, value: Menu) => {
   const newState = { ...currentState, selectedMenu: value.name };
 
   if (value.subMenuList) {
@@ -90,21 +90,21 @@ const getUpdatedState = (currentState, value) => {
   return newState;
 };
 
-const getUpdatedSubMenuState = (currentState, value) => {
+const getUpdatedSubMenuState = (currentState: any, value: SubMenu) => {
   const newState = { ...currentState, selectedSubMenu: value.name };
 
   newState.nestedSubMenuList = value.nestedSubMenuList ?? [];
   newState.selectedNestedSubMenu = newState.nestedSubMenuList.length > 0 ? newState.nestedSubMenuList[0].name : '';
   if (value.path) {
     newState.newPath = value.path;
-  } else if (value.nestedSubMenuList.length > 0) {
+  } else if (value.nestedSubMenuList?.length > 0) {
     newState.newPath = newState.nestedSubMenuList[0].path;
   }
 
   return newState;
 };
 
-const changeMenu = (value) => {
+const changeMenu = (value: Menu): void => {
   const currentState = {
     selectedMenu: selectedMenu.value,
     subMenuList: subMenuList.value,
@@ -126,7 +126,7 @@ const changeMenu = (value) => {
   }
 };
 
-const changeSubMenu = (value) => {
+const changeSubMenu = (value: SubMenu): void => {
   const currentState = {
     selectedSubMenu: selectedSubMenu.value,
     nestedSubMenuList: nestedSubMenuList.value,
@@ -144,30 +144,34 @@ const changeSubMenu = (value) => {
     router.push(updatedState.newPath);
   }
 };
+
 const changeNestedSubMenu = (value: any) => {
   menuStore.setSelectedNestedSubMenu(value.name);
   router.push(value.path);
 };
 
-const setMenuList = (newMenuList) => {
-  const menu = newMenuList.find((menu) => menu.name === selectedMenu.value);
-  if (menu.subMenuList) {
-    subMenuList.value = menu.subMenuList;
+const findMenuByName = <T extends MenuBase>(findMenuList: T[], name: string): T | undefined => findMenuList.find((menu) => menu.name === name);
+
+const updateMenuList = <T,>(list: { value: T[] }, newMenuList?: T[]) => {
+  if (newMenuList) {
+    list.value = newMenuList;
   }
+};
+
+const initMenuList = (newMenuList: Menu[]) => {
+  const menu = findMenuByName(newMenuList, selectedMenu.value);
+  if (!menu?.subMenuList) {
+    return;
+  }
+  updateMenuList(subMenuList, menu?.subMenuList);
   if (selectedNestedSubMenu.value) {
-    const subMenu = menu.subMenuList.find((subMenu) => subMenu.name === selectedSubMenu.value);
-    if (subMenu.nestedSubMenuList) {
-      nestedSubMenuList.value = subMenu.nestedSubMenuList;
-    }
+    const subMenu = findMenuByName(menu?.subMenuList || [], selectedSubMenu.value);
+    updateMenuList(nestedSubMenuList, subMenu?.nestedSubMenuList);
   }
 };
 onMounted(() => {
   menuStore.initializeMenus(route);
-  setMenuList(menuList);
-});
-
-watch(route, (newRoute) => {
-  menuStore.initializeMenus(newRoute);
+  initMenuList(menuList);
 });
 </script>
 <style scoped>

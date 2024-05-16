@@ -15,9 +15,7 @@ const customFetch = $fetch.create({
   baseURL: baseUrl(),
   headers: {
     'Content-Type': 'application/json;charset=utf-8'
-  },
-  async onRequest(config) {},
-  async onResponse(response) {}
+  }
 });
 
 export const usePpbFetch = () => {
